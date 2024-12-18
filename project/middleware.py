@@ -16,7 +16,6 @@ class CustomWebSocketMiddleware(BaseMiddleware):
         scope['session_token'] = session_token
 
         if session_token:
-            print("true")
             from django.apps import apps
             from main.models import Session
 

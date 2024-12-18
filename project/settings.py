@@ -16,7 +16,8 @@ import os
 
 load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 
 # Quick-start development settings - unsuitable for production
@@ -140,7 +141,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
+MEDIA_URL = '/uploads/' 
+MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads')
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760
+APPEND_SLASH = False
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 

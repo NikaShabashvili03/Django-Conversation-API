@@ -2,7 +2,6 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import sync_to_async
 from django.shortcuts import get_object_or_404
-
 class MessageConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.conversation_id = self.scope['url_route']['kwargs']['conversationId']
@@ -23,45 +22,31 @@ class MessageConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_discard(self.group_name, self.channel_name)
 
     async def send_message(self, event):
-        sender_data = await sync_to_async(self.get_serialized_sender)(event['sender'])
-        seens_data = await sync_to_async(self.get_serialized_seens)(event['seens'])
+        message = await sync_to_async(self.get_serialized_message)(event['id'])
         await self.send(text_data=json.dumps({
-            "message": {
-                'id': event['id'],
-                'created_at': event['created_at'],
-                'updated_at': event['updated_at'],
-                'body': event['body'],
-                'isDeleted': event['isDeleted'],
-                'sender': sender_data,
-                'seens': seens_data
-            },
+            "message": message,
             "action": "create"
         }))
     
-    async def delete_message(self, event):
-        sender_data = await sync_to_async(self.get_serialized_sender)(event['sender'])
-        seens_data = await sync_to_async(self.get_serialized_seens)(event['seens'])
+    async def update_message(self, event):
+        message = await sync_to_async(self.get_serialized_message)(event['id'])
         await self.send(text_data=json.dumps({
-            "message": {
-                'id': event['id'],
-                'created_at': event['created_at'],
-                'updated_at': event['updated_at'],
-                'body': event['body'],
-                'isDeleted': event['isDeleted'],
-                'sender': sender_data,
-                'seens': seens_data
-            },
+            "message": message,
             "action": "update"
         }))
+    
+    def get_serialized_message(self, id):
+        from .models import Message
+        from .serializers.message import MessageSerializer
 
-    def get_serialized_seens(self, seens):
-        from .serializers.user import ProfileSerializer
-        return ProfileSerializer(seens, many=True).data
-    
-    def get_serialized_sender(self, sender):
-        from .serializers.user import ProfileSerializer
-        return ProfileSerializer(sender).data
-    
+        try:
+            message_instance = Message.objects.get(id=id)
+        except Message.DoesNotExist:
+            return None
+        
+        message_data = MessageSerializer(message_instance).data
+        return message_data
+
     def get_conversation(self):
         from .models.conversation import Conversation
         return get_object_or_404(Conversation, id=self.conversation_id)
