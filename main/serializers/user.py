@@ -15,8 +15,14 @@ class LoginSerializer(serializers.Serializer):
         except User.DoesNotExist:
             raise serializers.ValidationError("User does not exist")
         
-
 class ProfileSerializer(serializers.ModelSerializer):
+    avatar = serializers.ImageField(required=False)
     class Meta:
         model = User 
-        fields = ['id', 'firstname', 'lastname', 'email']
+        fields = ['id', 'avatar', 'firstname', 'lastname', 'email']
+
+    def to_representation(self, instance):
+         representation = super().to_representation(instance)
+         if instance.avatar:
+               representation['avatar'] = instance.avatar.url
+         return representation

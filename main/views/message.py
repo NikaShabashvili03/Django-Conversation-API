@@ -22,7 +22,6 @@ class MessageCreate(APIView):
         
         body = data.get("body")
         
-        
         try:
             conversation = Conversation.objects.get(id=conversationId)
         except Conversation.DoesNotExist:
@@ -97,8 +96,8 @@ class MessageReactionView(APIView):
         except Message.DoesNotExist:
             return Response({"detail": "Conversation not found"}, status=404)
     
-        # if message.sender == user:
-        #     return Response({"detail": "You cant react your message"}, status=status.HTTP_403_FORBIDDEN)
+        if message.sender == user:
+            return Response({"detail": "You cant react your message"}, status=status.HTTP_403_FORBIDDEN)
         
         message.isReacted = True
         reaction = MessageReaction.objects.filter(message=message, user=user).first()
@@ -211,6 +210,7 @@ class MessagesView(APIView):
         
         try:
             messages = Message.objects.filter(conversation=conversation).distinct().order_by('-created_at')[:limit]
+            messages = list(messages)[::-1]
         except Message.DoesNotExist:
             return Response({"detail": "Conversation not found"}, status=404)
         

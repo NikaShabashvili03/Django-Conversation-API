@@ -59,9 +59,15 @@ class ConversationView(APIView):
 
     def get(self, request, *args, **kwargs):
         user = request.user
+        isGroup = self.request.query_params.get('isGroup', 'false')
+
+        if isGroup == 'true':
+            isGroup = True
+        elif isGroup == 'false':
+            isGroup = False
 
         conversations = Conversation.objects.filter(
-            Q(users=user)
+            Q(users=user) & Q(isGroup=isGroup)
         ).distinct()
 
         conversations = conversations.annotate(last_message_time=Max('messages__created_at'))

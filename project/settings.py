@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 from dotenv import load_dotenv
 import os
+from corsheaders.defaults import default_headers
 
 load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -29,7 +30,7 @@ SECRET_KEY = 'django-insecure-7opr%(_^&ivag)suks9ld6v!%_%4=nr1d_k@+b20bh0)35wsmw
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost','127.0.0.1']
 
 
 # Application definition
@@ -91,6 +92,19 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'project.wsgi.application'
+
+# CORS
+CORS_ALLOW_ALL_ORIGINS = True  # This allows all origins
+CORS_ALLOW_CREDENTIALS = True  # This allows cookies and other credentials to be sent
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'Authorization',
+    'Content-Type',  # If you need this header
+]
+CORS_ALLOW_METHODS = ['*']  # This allows all methods
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000'
+]
 
 # Sessions
 SESSION_COOKIE_SECURE = False
