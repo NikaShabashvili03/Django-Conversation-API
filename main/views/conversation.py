@@ -70,16 +70,7 @@ class ConversationView(APIView):
             Q(users=user) & Q(isGroup=isGroup)
         ).distinct()
 
-        conversations = conversations.annotate(last_message_time=Max('messages__created_at'))
-
-        conversations = conversations.prefetch_related(
-            Prefetch('messages', queryset=Message.objects.filter(
-                created_at__in=conversations.values('last_message_time')
-            ))
-        )
-
         serialized_conversations = ConversationSerializer(conversations, many=True)
-
         return Response(serialized_conversations.data, status=200)
     
 class ConversationId(APIView):

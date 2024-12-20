@@ -19,6 +19,8 @@ class User(AbstractBaseUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['firstname', 'lastname']
 
+    isOnline = models.BooleanField(default=False)
+
     def clean(self):
         if self.avatar:
             validate_image(self.avatar, 4000, 4000, 4000)

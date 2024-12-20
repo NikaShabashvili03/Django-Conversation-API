@@ -19,7 +19,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     avatar = serializers.ImageField(required=False)
     class Meta:
         model = User 
-        fields = ['id', 'avatar', 'firstname', 'lastname', 'email']
+        fields = ['id', 'isOnline', 'avatar', 'firstname', 'lastname', 'email']
 
     def to_representation(self, instance):
          representation = super().to_representation(instance)

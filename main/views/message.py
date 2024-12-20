@@ -31,7 +31,8 @@ class MessageCreate(APIView):
             return Response({"detail": "You do not have permission to view this conversation."}, status=status.HTTP_403_FORBIDDEN)
 
         message = Message.objects.create(sender=user, body=body or "", conversation=conversation)
-
+        conversation.lastMessage = message
+        conversation.save()
         for img in images:
             message_image = MessageImage(message=message, url=img)
             message_image.save()
@@ -58,14 +59,17 @@ class MessageSeen(APIView):
         except Message.DoesNotExist:
             return Response({"detail": "Conversation not found"}, status=404)
         
-        # if message.sender == user:
-        #     return Response({"detail": "You cant seen your message"}, status=status.HTTP_403_FORBIDDEN)
+        if message.sender == user:
+            return Response({"detail": "You cant seen your message"}, status=status.HTTP_403_FORBIDDEN)
         
         if user in message.seens.all():
             return Response({"detail": "This message already seened"}, status=status.HTTP_403_FORBIDDEN)
         
         message.seens.add(user)
         message.save()
+
+        conversation.lastMessage = message
+        conversation.save()
 
         return Response(MessageSerializer(message).data)
 
@@ -116,6 +120,10 @@ class MessageReactionView(APIView):
         create_reaction = MessageReaction.objects.create(message=message, user=user, emoji=emoji)
         create_reaction.save()
         message.save()
+
+
+        conversation.lastMessage = message
+        conversation.save()
 
         return Response(MessageSerializer(message).data)
     
@@ -193,7 +201,7 @@ class MessagesView(APIView):
 
     def get(self, request, conversationId, *args, **kwargs):
         user = request.user
-        limit = request.query_params.get('limit', 10)
+        limit = request.query_params.get('limit', 15)
 
         try:
             limit = int(limit)
