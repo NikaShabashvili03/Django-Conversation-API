@@ -85,7 +85,7 @@ class MessageReactionView(APIView):
         
         emoji = data.get("emoji")
 
-        if len(emoji) > 1:
+        if len(emoji) > 2:
             return Response({"detail": "Please set emoji"}, status=404)
         try:
             conversation = Conversation.objects.get(id=conversationId)

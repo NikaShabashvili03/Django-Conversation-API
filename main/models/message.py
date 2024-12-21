@@ -26,7 +26,7 @@ class Message(models.Model):
 class MessageReaction(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     message = models.ForeignKey(Message, related_name='reactions', on_delete=models.CASCADE)
-    emoji = models.CharField(max_length=1, null=False, blank=False)
+    emoji = models.CharField(max_length=2, null=False, blank=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

@@ -29,3 +29,8 @@ class MessageSerializer(serializers.ModelSerializer):
         model = Message 
         fields = ['id', 'sender', 'body', 'images', 'reactions', 'seens', 'isDeleted', 'isEdited', 'isReacted', 'created_at', 'updated_at']
      
+     def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        if representation['isDeleted']:
+            representation['body'] = None
+        return representation
