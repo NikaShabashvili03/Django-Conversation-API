@@ -148,3 +148,54 @@ class ConversationConsumer(AsyncWebsocketConsumer):
         from .serializers.conversation import ConversationSerializer
         conversation = get_object_or_404(Conversation, id=id)
         return ConversationSerializer(conversation).data
+    
+
+
+class TypingConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        self.conversation_id = self.scope['url_route']['kwargs']['conversationId']
+        self.group_name = f"typing_{self.conversation_id}"
+        user = self.scope['user']
+
+        conversation = await sync_to_async(self.get_conversation)()
+        if user not in await sync_to_async(self.get_conversation_users)(conversation):
+            await self.close(code=403)
+            return
+        
+        await self.channel_layer.group_add(self.group_name, self.channel_name)
+
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        await self.channel_layer.group_discard(self.group_name, self.channel_name)
+
+    async def receive(self, text_data):
+        data = json.loads(text_data)
+        user = await sync_to_async(self.get_serialized_user)()
+        is_typing = data['is_typing']
+
+        await self.channel_layer.group_send(
+            self.group_name,
+            {
+                'type': 'typing_status',
+                'user': user,
+                'is_typing': is_typing,
+            }
+        )
+
+    async def typing_status(self, event):
+        await self.send(text_data=json.dumps({
+            'user': event['user'],
+            'is_typing': event['is_typing'],
+        }))
+
+    def get_conversation(self):
+        from .models.conversation import Conversation
+        return get_object_or_404(Conversation, id=self.conversation_id)
+    
+    def get_conversation_users(self, conversation):
+        return list(conversation.users.all())
+    
+    def get_serialized_user(self):
+        from .serializers.user import ProfileSerializer
+        return ProfileSerializer(self.scope['user']).data
