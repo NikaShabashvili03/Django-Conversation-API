@@ -220,7 +220,7 @@ class MessagesView(APIView):
             messages = Message.objects.filter(conversation=conversation).distinct().order_by('-created_at')[:limit]
             messages = list(messages)[::-1]
         except Message.DoesNotExist:
-            return Response({"detail": "Conversation not found"}, status=404)
+            return Response({"detail": "Message not found"}, status=404)
         
         return Response(MessageSerializer(messages, many=True).data)
         
